@@ -4,6 +4,7 @@ import com.exceljava.jinx.ExcelFunction;
 import com.exceljava.jinx.Rtd;
 
 import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
@@ -35,14 +36,7 @@ public class ExcelFunctions {
         return x + y + z;
     }
 
-    @ExcelFunction(
-            value = "getQuotes",
-            description = "Return the quotes"
-    )
-    public Rtd<Integer> getQuotes(QuotesConsumer c) {
 
-        return new CurrentQuoteStoreRtd(c,executor);
-    }
 
     @ExcelFunction(
             value = "subscribe",
@@ -55,11 +49,14 @@ public class ExcelFunctions {
     }
 
     @ExcelFunction(
-            value = "getq",
-            description = "Return the quotes"
+            value = "quoteDetail",
+            description = "starts subscriber"
     )
-    public static double getQ() {
+    public static String getquoteDetail(Map<String,Quote> quotes, Integer id) {
 
-        return QuotesConsumer.getInstance().getQuotes().size();
+        Quote q = quotes.get(id.toString());
+        return q.getStatus();
     }
+
+
 }
