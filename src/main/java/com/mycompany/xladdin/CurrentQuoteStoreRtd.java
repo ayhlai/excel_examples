@@ -11,18 +11,19 @@ import java.util.concurrent.TimeUnit;
 public class CurrentQuoteStoreRtd extends Rtd<Integer> implements Runnable {
     private final ScheduledExecutorService executor;
     private ScheduledFuture<?> future;
+    QuotesConsumer c;
 
-    CurrentQuoteStoreRtd(ScheduledExecutorService executor) {
+    CurrentQuoteStoreRtd(QuotesConsumer c, ScheduledExecutorService executor) {
         this.executor = executor;
 
         // call Rtd.notify with the initial value
-        notify(QuotesConsumer.getInstance().getQuotes().size());
+        notify(c.getQuotes().size());
     }
 
 
     public void run() {
         // notify Excel with the latest value
-        notify(QuotesConsumer.getInstance().getQuotes().size());
+        notify(c.getQuotes().size());
     }
 
     @Override

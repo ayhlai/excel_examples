@@ -39,18 +39,18 @@ public class ExcelFunctions {
             value = "getQuotes",
             description = "Return the quotes"
     )
-    public Rtd<Integer> getQuotes() {
+    public Rtd<Integer> getQuotes(QuotesConsumer c) {
 
-        return new CurrentQuoteStoreRtd(executor);
+        return new CurrentQuoteStoreRtd(c,executor);
     }
 
     @ExcelFunction(
             value = "subscribe",
             description = "starts subscriber"
     )
-    public double subscribe() {
+    public QuotesConsumer subscribe() {
 
-        QuotesConsumer.getInstance().subscribe();
-        return 1;
+        QuotesConsumer c = QuotesConsumer.getInstance().subscribe();
+        return c;
     }
 }

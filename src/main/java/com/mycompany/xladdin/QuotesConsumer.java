@@ -68,7 +68,7 @@ public class QuotesConsumer extends Thread   {
         return this.quotes;
     }
 
-    void subscribe()
+    QuotesConsumer subscribe()
     {
         String bootstrapServers="localhost:9092";
         String grp_id="third_app";
@@ -85,6 +85,7 @@ public class QuotesConsumer extends Thread   {
         //polling
         QuotesConsumer c = new QuotesConsumer();
         c.start();
+        return c;
 
     }
 
