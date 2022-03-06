@@ -12,10 +12,10 @@ import java.util.concurrent.ScheduledExecutorService;
  */
 public class ExcelFunctions {
 
-    private final ScheduledExecutorService executor;
+    private ScheduledExecutorService executor;
 
     public ExcelFunctions() {
-        this.executor = Executors.newScheduledThreadPool(4);
+        executor = Executors.newScheduledThreadPool(4);
     }
 
     /***
@@ -48,9 +48,18 @@ public class ExcelFunctions {
             value = "subscribe",
             description = "starts subscriber"
     )
-    public QuotesConsumer subscribe() {
+    public static QuotesConsumer subscribe() {
 
         QuotesConsumer c = QuotesConsumer.getInstance().subscribe();
         return c;
+    }
+
+    @ExcelFunction(
+            value = "getq",
+            description = "Return the quotes"
+    )
+    public static double getQ() {
+
+        return QuotesConsumer.getInstance().getQuotes().size();
     }
 }

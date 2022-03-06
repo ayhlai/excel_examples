@@ -2,9 +2,7 @@ package com.mycompany.xladdin;
 
 
 import java.time.Duration;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Properties;
+import java.util.*;
 
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
@@ -17,14 +15,21 @@ import org.slf4j.LoggerFactory;
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.Properties;
+import java.util.concurrent.ConcurrentHashMap;
+
 import org.slf4j.impl.SimpleLogger;
 
 public class QuotesConsumer extends Thread   {
 
-    HashMap<String,Quote> quotes = new HashMap<String, Quote>();
-    Properties properties = null;
+    ConcurrentHashMap<String,Quote> quotes = null;
 
     static QuotesConsumer consumer = null;
+
+
+    public QuotesConsumer()
+    {
+        quotes = new ConcurrentHashMap<String, Quote>();
+    }
 
     public static QuotesConsumer getInstance() {
         if(consumer == null) {
@@ -37,7 +42,17 @@ public class QuotesConsumer extends Thread   {
 
     public void run()
     {
+        String grp_id="third_app";
         String topic="my-topic";
+        //Creating consumer properties
+        Properties properties =new Properties();
+        properties.setProperty(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG,"localhost:9094");
+        properties.setProperty(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG,   StringDeserializer.class.getName());
+        properties.setProperty(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
+        properties.setProperty(ConsumerConfig.GROUP_ID_CONFIG,grp_id);
+        properties.setProperty(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG,"earliest");
+        //creating consumer
+
         KafkaConsumer<String,String> consumer= new KafkaConsumer<String,String>(properties);
         //Subscribing
         consumer.subscribe(Arrays.asList(topic));
@@ -45,8 +60,8 @@ public class QuotesConsumer extends Thread   {
         while(true){
             ConsumerRecords<String,String> records=consumer.poll(Duration.ofMillis(100));
             for(ConsumerRecord<String,String> record: records){
-                System.out.print("Key: "+ record.key() + ", Value:" +record.value());
-                System.out.print("Partition:" + record.partition()+",Offset:"+record.offset());
+                System.out.println("Key: "+ record.key() + ", Value:" +record.value());
+                System.out.println("Partition:" + record.partition()+",Offset:"+record.offset());
                 Quote q = new Quote();
                 q.setId(record.key());
                 q.setStatus(record.value());
@@ -63,7 +78,7 @@ public class QuotesConsumer extends Thread   {
         System.out.println("finished");
     }
 
-    HashMap<String,Quote> getQuotes()
+    Map<String,Quote> getQuotes()
     {
         return this.quotes;
     }
@@ -73,14 +88,7 @@ public class QuotesConsumer extends Thread   {
         String bootstrapServers="localhost:9092";
         String grp_id="third_app";
 
-        //Creating consumer properties
-        properties =new Properties();
-        properties.setProperty(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG,"localhost:9094");
-        properties.setProperty(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG,   StringDeserializer.class.getName());
-        properties.setProperty(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
-        properties.setProperty(ConsumerConfig.GROUP_ID_CONFIG,grp_id);
-        properties.setProperty(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG,"earliest");
-        //creating consumer
+
 
         //polling
         QuotesConsumer c = new QuotesConsumer();
