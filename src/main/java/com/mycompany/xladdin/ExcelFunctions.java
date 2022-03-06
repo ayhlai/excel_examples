@@ -43,4 +43,14 @@ public class ExcelFunctions {
 
         return new CurrentQuoteStoreRtd(executor);
     }
+
+    @ExcelFunction(
+            value = "subscribe",
+            description = "starts subscriber"
+    )
+    public double subscribe() {
+
+        QuotesConsumer.getInstance().subscribe();
+        return 1;
+    }
 }

@@ -19,9 +19,10 @@ import java.util.Arrays;
 import java.util.Properties;
 import org.slf4j.impl.SimpleLogger;
 
-public class QuotesConsumer {
+public class QuotesConsumer extends Thread   {
 
     HashMap<String,Quote> quotes = new HashMap<String, Quote>();
+    Properties properties = null;
 
     static QuotesConsumer consumer = null;
 
@@ -31,6 +32,27 @@ public class QuotesConsumer {
         }
 
         return consumer;
+    }
+
+
+    public void run()
+    {
+        String topic="my-topic";
+        KafkaConsumer<String,String> consumer= new KafkaConsumer<String,String>(properties);
+        //Subscribing
+        consumer.subscribe(Arrays.asList(topic));
+
+        while(true){
+            ConsumerRecords<String,String> records=consumer.poll(Duration.ofMillis(100));
+            for(ConsumerRecord<String,String> record: records){
+                System.out.print("Key: "+ record.key() + ", Value:" +record.value());
+                System.out.print("Partition:" + record.partition()+",Offset:"+record.offset());
+                Quote q = new Quote();
+                q.setId(record.key());
+                q.setStatus(record.value());
+                quotes.put(record.key(),q);
+            }
+        }
     }
 
     public static void main(String args[])
@@ -48,37 +70,22 @@ public class QuotesConsumer {
 
     void subscribe()
     {
-        Logger logger= (Logger) LoggerFactory.getLogger(QuotesConsumer.class.getName());
         String bootstrapServers="localhost:9092";
         String grp_id="third_app";
-        String topic="my-topic";
+
         //Creating consumer properties
-        Properties properties=new Properties();
+        properties =new Properties();
         properties.setProperty(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG,"localhost:9094");
         properties.setProperty(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG,   StringDeserializer.class.getName());
         properties.setProperty(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
         properties.setProperty(ConsumerConfig.GROUP_ID_CONFIG,grp_id);
         properties.setProperty(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG,"earliest");
         //creating consumer
-        KafkaConsumer<String,String> consumer= new KafkaConsumer<String,String>(properties);
-        //Subscribing
-        consumer.subscribe(Arrays.asList(topic));
+
         //polling
-        while(true){
-            ConsumerRecords<String,String> records=consumer.poll(Duration.ofMillis(100));
-            for(ConsumerRecord<String,String> record: records){
-                System.out.print("Key: "+ record.key() + ", Value:" +record.value());
-                System.out.print("Partition:" + record.partition()+",Offset:"+record.offset());
-                logger.info("Key: "+ record.key() + ", Value:" +record.value());
-                logger.info("Partition:" + record.partition()+",Offset:"+record.offset());
-                Quote q = new Quote();
-                q.setId(record.key());
-                q.setStatus(record.value());
-                quotes.put(record.key(),q);
-            }
+        QuotesConsumer c = new QuotesConsumer();
+        c.start();
 
-
-        }
     }
 
 
